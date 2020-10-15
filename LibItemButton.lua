@@ -1,4 +1,4 @@
-local lib = LibStub:NewLibrary("LibItemButton", 1)
+local lib = LibStub:NewLibrary("LibItemButton", 2)
 
 if not lib then return end
 
@@ -156,6 +156,8 @@ do	-- inventory
 end
 
 do	-- bags
+	local MAX_CONTAINER_ITEMS = 36
+	
 	for bag = 1, NUM_CONTAINER_FRAMES do
 		for slot = 1, MAX_CONTAINER_ITEMS do
 			lib:RegisterButton(_G[format("ContainerFrame%dItem%d", bag, slot)], "BAG", true)
