@@ -1,19 +1,19 @@
-local lib = LibStub:NewLibrary("LibItemButton", 2)
+local lib = LibStub:NewLibrary("LibItemButton", 3)
 
 if not lib then return end
 
 local GetItemInfo = GetItemInfo
 
-lib.callbacks = lib.callbacks or {}
+lib.callbacks = lib.callbacks or { }
 
 lib.frame = lib.frame or CreateFrame("Frame")
 lib.frame:SetScript("OnEvent", lib.frame.Show)
 lib.frame:SetScript("OnUpdate", onUpdate)
 lib.frame:Hide()
 
-lib.buttonRegistry = lib.buttonRegistry or {}
-lib.buttonCategory = lib.buttonCategory or {}
-lib.buttonItems = lib.buttonItems or {}
+lib.buttonRegistry = lib.buttonRegistry or { }
+lib.buttonCategory = lib.buttonCategory or { }
+lib.buttonItems = lib.buttonItems or { }
 
 function lib:RegisterButton(button, category)
 	self.buttonRegistry[button] = true
@@ -119,9 +119,33 @@ end
 
 
 local frame = CreateFrame("Frame")
+frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent", function(self, event, ...)
 	self[event](self, ...)
 end)
+
+local addonHandlers = { }
+
+function frame:ADDON_LOADED(addonName)
+	if addonHandlers[addonName] then
+		addonHandlers[addonName]()
+		addonHandlers[addonName] = nil
+	end
+	
+	if not next(addonHandlers) then
+		self:UnregisterEvent("ADDON_LOADED")
+		self.ADDON_LOADED = nil
+	end
+end
+
+function frame:RegisterAddonHandler(addonName, func)
+	if IsAddOnLoaded(addonName) then
+		func()
+		return
+	end
+
+	addonHandlers[addonName] = func
+end
 
 do	-- inventory
 	local INVENTORY_BUTTONS = {
@@ -230,8 +254,7 @@ do	-- bank
 end
 
 do	-- void storage
-	frame:RegisterEvent("VOID_STORAGE_OPEN")
-	function frame:VOID_STORAGE_OPEN()
+	frame:RegisterAddonHandler("Blizzard_VoidStorageUI", function()
 		for slot = 1, 80 do
 			local button = _G["VoidStorageStorageButton"..slot]
 			lib:RegisterButton(button, "VOIDSTORAGE", true)
@@ -243,10 +266,7 @@ do	-- void storage
 				lib:UpdateButton(_G["VoidStorageStorageButton"..slot], GetVoidItemHyperlinkString((VoidStorageFrame.page - 1) * 80 + slot))
 			end
 		end)
-		
-		self:UnregisterEvent("VOID_STORAGE_OPEN")
-		self.VOID_STORAGE_OPEN = nil
-	end
+	end)
 end
 
 do	-- guild bank
@@ -375,10 +395,7 @@ do	-- auction
 end
 
 do	-- black market
-	frame:RegisterEvent("ADDON_LOADED")
-	function frame:ADDON_LOADED(addon)
-		if addon ~= "Blizzard_BlackMarketUI" then return end
-		
+	frame:RegisterAddonHandler("Blizzard_BlackMarketUI", function()
 		frame:RegisterEvent("BLACK_MARKET_ITEM_UPDATE")
 		function frame:BLACK_MARKET_ITEM_UPDATE()
 			local button = BlackMarketFrame.HotDeal.Item
@@ -410,30 +427,27 @@ do	-- black market
 			self:UnregisterEvent("BLACK_MARKET_ITEM_UPDATE")
 			self.BLACK_MARKET_ITEM_UPDATE = nil
 		end
-		
-		self:UnregisterEvent("ADDON_LOADED")
-		self.ADDON_LOADED = nil
-	end
+	end)
 end
 
 do	-- loot
-	for i = 1, LOOTFRAME_NUMBUTTONS do
-		lib:RegisterButton(_G["LootButton"..i], "LOOT", true)
-	end
+	-- for i = 1, LOOTFRAME_NUMBUTTONS do
+	-- 	lib:RegisterButton(_G["LootButton"..i], "LOOT", true)
+	-- end
 	
-	hooksecurefunc("LootFrame_UpdateButton", function(index)
-		local slot = LOOTFRAME_NUMBUTTONS * (LootFrame.page - 1) + index
-		lib:UpdateButton(_G["LootButton"..index], GetLootSlotLink(slot))
-	end)
+	-- hooksecurefunc("LootFrame_UpdateButton", function(index)
+	-- 	local slot = LOOTFRAME_NUMBUTTONS * (LootFrame.page - 1) + index
+	-- 	lib:UpdateButton(_G["LootButton"..index], GetLootSlotLink(slot))
+	-- end)
 	
-	for i=1, NUM_GROUP_LOOT_FRAMES do
-		local frame = _G["GroupLootFrame"..i]
-		local button = frame.IconFrame
-		button.icon = button.Icon
-		lib:RegisterButton(button, "GROUPLOOT", true)
-		frame:HookScript("OnShow", function(self)
-			local link = GetLootRollItemLink(self.rollID)
-			lib:UpdateButton(self.IconFrame, link)
-		end)
-	end
+	-- for i=1, NUM_GROUP_LOOT_FRAMES do
+	-- 	local frame = _G["GroupLootFrame"..i]
+	-- 	local button = frame.IconFrame
+	-- 	button.icon = button.Icon
+	-- 	lib:RegisterButton(button, "GROUPLOOT", true)
+	-- 	frame:HookScript("OnShow", function(self)
+	-- 		local link = GetLootRollItemLink(self.rollID)
+	-- 		lib:UpdateButton(self.IconFrame, link)
+	-- 	end)
+	-- end
 end
