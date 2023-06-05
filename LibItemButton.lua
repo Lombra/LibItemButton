@@ -1,4 +1,4 @@
-local lib = LibStub:NewLibrary("LibItemButton", 3)
+local lib = LibStub:NewLibrary("LibItemButton", 4)
 
 if not lib then return end
 
@@ -431,14 +431,18 @@ do	-- black market
 end
 
 do	-- loot
-	-- for i = 1, LOOTFRAME_NUMBUTTONS do
-	-- 	lib:RegisterButton(_G["LootButton"..i], "LOOT", true)
-	-- end
+	local function acquiredLootButtonCallback(lib, frame, elementData, isNew)
+		if isNew then
+			lib:RegisterButton(frame.Item, "LOOT", true)
+		end
+	end
 	
-	-- hooksecurefunc("LootFrame_UpdateButton", function(index)
-	-- 	local slot = LOOTFRAME_NUMBUTTONS * (LootFrame.page - 1) + index
-	-- 	lib:UpdateButton(_G["LootButton"..index], GetLootSlotLink(slot))
-	-- end)
+	local function initializedLootButtonCallback(lib, frame, elementData)
+		lib:UpdateButton(frame.Item, GetLootSlotLink(frame:GetSlotIndex()))
+	end
+
+	ScrollUtil.AddAcquiredFrameCallback(LootFrame.ScrollBox, acquiredLootButtonCallback, lib, true)
+	ScrollUtil.AddInitializedFrameCallback(LootFrame.ScrollBox, initializedLootButtonCallback, lib, true)
 	
 	-- for i=1, NUM_GROUP_LOOT_FRAMES do
 	-- 	local frame = _G["GroupLootFrame"..i]
