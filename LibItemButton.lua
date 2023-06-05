@@ -174,8 +174,10 @@ do	-- inventory
 	end
 	
 	frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-	function frame:PLAYER_EQUIPMENT_CHANGED(slot, hasItem)
-		lib:UpdateButton(INVENTORY_BUTTONS[slot], GetInventoryItemLink("player", slot))
+	function frame:PLAYER_EQUIPMENT_CHANGED(slotID, hasItem)
+		if slotID <= INVSLOT_LAST_EQUIPPED then
+			lib:UpdateButton(INVENTORY_BUTTONS[slotID], GetInventoryItemLink("player", slotID))
+		end
 	end
 end
 
@@ -192,7 +194,7 @@ do	-- bags
 	function frame:BAG_UPDATE_DELAYED()
 		for button in pairs(lib:GetRegisteredButtons()) do
 			if lib.buttonCategory[button] == "BAG" then
-				lib:UpdateButton(button, GetContainerItemLink(button:GetParent():GetID(), button:GetID()))
+				lib:UpdateButton(button, C_Container.GetContainerItemLink(button:GetParent():GetID(), button:GetID()))
 			end
 		end
 	end
@@ -202,7 +204,7 @@ do	-- bags
 		if not frameName:match("^ContainerFrame%d+$") then return end
 		for i = 1, size do
 			local button = _G[frameName.."Item"..i]
-			lib:UpdateButton(button, GetContainerItemLink(id, button:GetID()))
+			lib:UpdateButton(button, C_Container.GetContainerItemLink(id, button:GetID()))
 		end
 	end)
 end
@@ -218,14 +220,14 @@ do	-- bank
 	frame:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 	function frame:PLAYERBANKSLOTS_CHANGED(slot)
 		if slot <= NUM_BANKGENERIC_SLOTS then
-			lib:UpdateButton(bankButtons[slot], GetContainerItemLink(BANK_CONTAINER, slot))
+			lib:UpdateButton(bankButtons[slot], C_Container.GetContainerItemLink(BANK_CONTAINER, slot))
 		end
 	end
 	
 	frame:RegisterEvent("BANKFRAME_OPENED")
 	function frame:BANKFRAME_OPENED()
 		for slot, button in ipairs(bankButtons) do
-			lib:UpdateButton(button, GetContainerItemLink(BANK_CONTAINER, slot))
+			lib:UpdateButton(button, C_Container.GetContainerItemLink(BANK_CONTAINER, slot))
 		end
 	end
 	
@@ -239,13 +241,13 @@ do	-- bank
 			for slot = 1, 98 do
 				local button = ReagentBankFrame["Item"..slot]
 				lib:RegisterButton(button, "REAGENTBANK", true)
-				lib:UpdateButton(button, GetContainerItemLink(REAGENTBANK_CONTAINER, slot))
+				lib:UpdateButton(button, C_Container.GetContainerItemLink(REAGENTBANK_CONTAINER, slot))
 				reagentBankButtons[slot] = button
 			end
 			
 			frame:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 			function frame:PLAYERREAGENTBANKSLOTS_CHANGED(slot)
-				lib:UpdateButton(reagentBankButtons[slot], GetContainerItemLink(REAGENTBANK_CONTAINER, slot))
+				lib:UpdateButton(reagentBankButtons[slot], C_Container.GetContainerItemLink(REAGENTBANK_CONTAINER, slot))
 			end
 			
 			reagentSlotsRegistered = true
