@@ -344,7 +344,7 @@ do	-- merchant
 end
 
 do	-- auction
-	frame:RegisterEvent("AUCTION_HOUSE_SHOW")
+	-- frame:RegisterEvent("AUCTION_HOUSE_SHOW")
 	function frame:AUCTION_HOUSE_SHOW()
 		for i = 1, NUM_BROWSE_TO_DISPLAY do
 			local buttonName = "BrowseButton"..i.."Item"
