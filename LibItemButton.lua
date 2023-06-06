@@ -408,23 +408,20 @@ do	-- black market
 				local link = select(15,  C_BlackMarket.GetHotItem())
 				lib:UpdateButton(BlackMarketFrame.HotDeal.Item, link)
 			end)
-			
-			for i, button in ipairs(BlackMarketScrollFrame.buttons) do
-				button.Item.icon = button.Item.IconTexture
-				lib:RegisterButton(button.Item, "BLACKMARKET", true)
-			end
-			
-			local function update()
-				local buttons = BlackMarketScrollFrame.buttons
-				for i = 1, min(#buttons, C_BlackMarket.GetNumItems()) do
-					local link = select(15,  C_BlackMarket.GetItemInfoByIndex(BlackMarketScrollFrame.offset + i))
-					lib:UpdateButton(buttons[i].Item, link)
+
+			local function acquiredLootButtonCallback(lib, frame, elementData, isNew)
+				if isNew then
+					lib:RegisterButton(frame.Item, "BLACKMARKET", true)
 				end
 			end
 			
-			update()
-			
-			hooksecurefunc("BlackMarketScrollFrame_Update", update)
+			local function initializedLootButtonCallback(lib, frame, elementData)
+				local link = select(15,  C_BlackMarket.GetItemInfoByIndex(elementData.index))
+				lib:UpdateButton(frame.Item, link)
+			end
+
+			ScrollUtil.AddAcquiredFrameCallback(BlackMarketFrame.ScrollBox, acquiredLootButtonCallback, lib, true)
+			ScrollUtil.AddInitializedFrameCallback(BlackMarketFrame.ScrollBox, initializedLootButtonCallback, lib, true)
 			
 			self:UnregisterEvent("BLACK_MARKET_ITEM_UPDATE")
 			self.BLACK_MARKET_ITEM_UPDATE = nil
@@ -446,7 +443,7 @@ do	-- loot
 	ScrollUtil.AddAcquiredFrameCallback(LootFrame.ScrollBox, acquiredLootButtonCallback, lib, true)
 	ScrollUtil.AddInitializedFrameCallback(LootFrame.ScrollBox, initializedLootButtonCallback, lib, true)
 	
-	-- for i=1, NUM_GROUP_LOOT_FRAMES do
+	-- for i = 1, NUM_GROUP_LOOT_FRAMES do
 	-- 	local frame = _G["GroupLootFrame"..i]
 	-- 	local button = frame.IconFrame
 	-- 	button.icon = button.Icon
